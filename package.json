@@ -1,0 +1,21 @@
+{
+  "name": "lista-livros",
+  "version": "1.0.0",
+  "description": "Atualiza valores de uma lista de livros",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "livros",
+    "amazon"
+  ],
+  "author": "Julia Martins",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "cheerio": "^1.0.0-rc.12",
+    "ejs": "^3.1.8",
+    "express": "^4.18.1"
+  }
+}
