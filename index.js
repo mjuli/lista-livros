@@ -49,19 +49,25 @@ app.get('/books', async (req, res) => {
     const oficialListJSON = typeof oficialList === 'string' ?
       JSON.parse(oficialList) : oficialList
 
-    const updatedList = BookList.updateBookLists(oficialListJSON, lastListJSON)
+    let updatedList = BookList.updateBookLists(oficialListJSON, lastListJSON)
 
     await File
       .write('./public/listaOficial.json', JSON.stringify(updatedList))
 
     const orderBy = req.query.orderBy
+    const active = req.query.active
+
     let orderedList = []
+
+    if(active === 'true')
+      updatedList = BookList.removeDeletedBooks(updatedList, lastListJSON)
 
     if (orderBy == 'title')
       orderedList = BookList.orderByTitle(updatedList)
 
     if (orderBy == 'percentage')
       orderedList = BookList.orderByPercentage(updatedList)
+
 
     res.render('table.ejs', { updatedList, orderedList })
 
