@@ -144,6 +144,7 @@ dist
 
 public/listaAtual.json
 public/listaOficial.json
+public/sites.json
 todo.txt
 
 # End of https://www.toptal.com/developers/gitignore/api/node
