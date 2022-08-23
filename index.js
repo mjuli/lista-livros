@@ -1,7 +1,5 @@
 const express = require('express')
-const axios = require('axios')
-const cheerio = require('cheerio')
-const Book = require('./Book')
+const BookList = require('./BookList')
 const File = require('./File')
 
 const PORT = process.env.PORT || 8080
@@ -25,38 +23,12 @@ const sites = [
 
 app.get('/', async (req, res) => {
   try {
-    const currentDate = new Date(Date.now()).toLocaleDateString()
-    const booksList = {}
-
-    for (let site of sites) {
-      const response = await axios.get(site.url)
-      const $ = cheerio.load(response.data)
-
-      $('table tbody tr').each((index, element) => {
-        const title = $($(element).find("td span")[0]).text()
-        let price = $($(element).find("td")[3]).text()
-        const shortTitle = title.slice(0, 30)
-
-        if (title && !booksList[shortTitle]) {
-
-          price = price
-            .replace('R$ ', '')
-            .replace(',', '.')
-
-          booksList[shortTitle] = {
-            title,
-            price,
-            currentDate
-          }
-        }
-      })
-    }
+    const booksList = await BookList.getBookList(sites)
 
     await File
       .write('./public/listaAtual.json', JSON.stringify(booksList))
 
     res.json(booksList)
-
   } catch (error) {
     console.log('Erro na rota GET /:', error)
   }
@@ -64,18 +36,35 @@ app.get('/', async (req, res) => {
 
 app.get('/books', async (req, res) => {
   try {
-    const oficialList = await File.read('./public/listaOficial.json')
-    const oficialListJSON = JSON.parse(oficialList)
+    const lastListJSON = await BookList.getBookList(sites)
 
-    const lastList = await File.read('./public/listaAtual.json')
-    const lastListJSON = JSON.parse(lastList)
+    await File
+      .write('./public/listaAtual.json', JSON.stringify(lastListJSON))
 
-    const updatedList = Book.compareBookLists(oficialListJSON, lastListJSON)
+    let oficialList = await File.read('./public/listaOficial.json')
+
+    if (!oficialList)
+      oficialList = BookList.createBookList(lastListJSON)
+
+    const oficialListJSON = typeof oficialList === 'string' ?
+      JSON.parse(oficialList) : oficialList
+
+    const updatedList = BookList.updateBookLists(oficialListJSON, lastListJSON)
 
     await File
       .write('./public/listaOficial.json', JSON.stringify(updatedList))
 
-    res.render('table.ejs', { updatedList })
+    const orderBy = req.query.orderBy
+    let orderedList = []
+
+    if (orderBy == 'title')
+      orderedList = BookList.orderByTitle(updatedList)
+
+    if (orderBy == 'percentage')
+      orderedList = BookList.orderByPercentage(updatedList)
+
+    res.render('table.ejs', { updatedList, orderedList })
+
   } catch (error) {
     console.log('Erro na rota GET /books:', error)
   }
