@@ -4,6 +4,16 @@ const cheerio = require('cheerio')
 
 class BookList {
 
+  static removeDeletedBooks(oficialList, lastList) {
+    const updatedList = { ...oficialList }
+
+    for(let book in updatedList){
+      if(!lastList[book])
+        delete updatedList[book]
+    }
+
+    return updatedList
+  }
 
   static updateBookLists(oficialList, lastList) {
     const updatedList = { ...oficialList }
