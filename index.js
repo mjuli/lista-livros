@@ -10,46 +10,79 @@ app.set('view engine', 'ejs')
 
 app.use(express.static('public'))
 
-const sites = [
-  {
-    nome: 'Amazon - Livros que faltam comprar',
-    url: 'https://www.amazon.com.br/hz/wishlist/printview/C871CEY6KYTP'
-  },
-  {
-    nome: 'Amazon - Top 15',
-    url: 'https://www.amazon.com.br/hz/wishlist/printview/1M1MKAYJV4OBT'
-  }
-]
-
-app.get('/', async (req, res) => {
+app.get('/', async(req, res) => {
   try {
-    const booksList = await BookList.getBookList(sites)
+    const name = req.query.name
+    const url = req.query.url
+
+    let sites = await File
+      .read('./public/sites.json')
+
+    if(!sites){
+      sites = '[]'
+
+      await File
+        .write('./public/sites.json', sites)
+    }
+
+    const sitesList = JSON.parse(sites)
+
+    if(name && url){
+      sitesList.push({
+        name,
+        url
+      })
+
+      await File
+        .write('./public/sites.json', JSON.stringify(sitesList))
+    }
+
+    res.render('index.ejs', { sitesList })
+  } catch (error) {
+    console.error('Erro na rota GET /:', error)
+  }
+})
+
+app.get('/books', async (req, res) => {
+  try {
+    const sites = await File
+      .read('./public/sites.json')
+
+    const booksList = await BookList
+      .getBookList(JSON.parse(sites))
 
     await File
       .write('./public/listaAtual.json', JSON.stringify(booksList))
 
     res.json(booksList)
   } catch (error) {
-    console.log('Erro na rota GET /:', error)
+    console.error('Erro na rota GET /books:', error)
   }
 })
 
-app.get('/books', async (req, res) => {
+app.get('/books/price', async (req, res) => {
   try {
-    const lastListJSON = await BookList.getBookList(sites)
+    const sites = await File
+      .read('./public/sites.json')
+
+    const lastListJSON = await BookList
+      .getBookList(JSON.parse(sites))
 
     await File
       .write('./public/listaAtual.json', JSON.stringify(lastListJSON))
 
-    let oficialList = await File.read('./public/listaOficial.json')
+    let oficialList = await File
+      .read('./public/listaOficial.json')
 
     if (!oficialList)
-      oficialList = BookList.createBookList(lastListJSON)
+      oficialList = BookList
+        .createBookList(lastListJSON)
 
     const oficialListJSON = typeof oficialList === 'string' ?
       JSON.parse(oficialList) : oficialList
 
-    let updatedList = BookList.updateBookLists(oficialListJSON, lastListJSON)
+    let updatedList = BookList
+      .updateBookLists(oficialListJSON, lastListJSON)
 
     await File
       .write('./public/listaOficial.json', JSON.stringify(updatedList))
@@ -72,7 +105,7 @@ app.get('/books', async (req, res) => {
     res.render('table.ejs', { updatedList, orderedList })
 
   } catch (error) {
-    console.log('Erro na rota GET /books:', error)
+    console.error('Erro na rota GET /books/price:', error)
   }
 })
 
