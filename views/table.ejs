@@ -26,23 +26,55 @@
         </tr>
       </thead>
       <tbody>
-        <% for(let book in updatedList) { %>
-          <tr>
-            <% for(let item in updatedList[book]) { %>
-              <% if(item=='title' ) { %>
-                <td>
-                  <%= updatedList[book][item] %>
-                </td>
+        <% if(orderedList.length) { %>
+          <% for(let book of orderedList) { %>
+            <% if(Number(updatedList[book].percentage) > 40) { %>
+              <tr class="table-success">
+            <% } else if (Number(updatedList[book].percentage) > 30) { %>
+              <tr class="table-primary">
+            <% } else if (Number(updatedList[book].percentage)> 20) { %>
+              <tr class="table-warning">
+            <% } else { %>
+              <tr>
+            <% } %>
+              <% for(let item in updatedList[book]) { %>
+                <% if(item=='title' ) { %>
+                  <td>
+                    <%= updatedList[book][item] %>
+                  </td>
                 <% } else { %>
                   <td class="text-center">
                     <%= updatedList[book][item] %>
                   </td>
-                  <% } %>
-                    <% } %>
-          </tr>
+                <% } %>
+              <% } %>
+            </tr>
+           <% } %>
+        <% } else { %>
+
+          <% for(let book in updatedList) { %>
+            <tr>
+              <% for(let item in updatedList[book]) { %>
+                <% if(item=='title' ) { %>
+                  <td>
+                    <%= updatedList[book][item] %>
+                  </td>
+                <% } else { %>
+                  <td class="text-center">
+                    <%= updatedList[book][item] %>
+                  </td>
+                <% } %>
+              <% } %>
+            </tr>
           <% } %>
+        <% } %>
+
       </tbody>
     </table>
+
+    <p class="text-end fs-5"> Total de livros: <%= Object.keys(updatedList).length %>
+    </p>
+
   </div>
 </body>
 
