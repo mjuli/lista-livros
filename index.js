@@ -1,6 +1,7 @@
 const express = require('express')
 const BookList = require('./BookList')
 const File = require('./File')
+const bodyParser = require('body-parser')
 
 const PORT = process.env.PORT || 8080
 
@@ -9,6 +10,9 @@ const app = express()
 app.set('view engine', 'ejs')
 
 app.use(express.static('public'))
+
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 app.get('/', async(req, res) => {
   try {
@@ -27,14 +31,19 @@ app.get('/', async(req, res) => {
 
     const sitesList = JSON.parse(sites)
 
-    if(name && url){
-      sitesList.push({
-        name,
-        url
-      })
+    if (name && url){
+      const isURLIncluded = sitesList
+        .some(site => site.url === url)
 
-      await File
-        .write('./public/sites.json', JSON.stringify(sitesList))
+      if(!isURLIncluded){
+        sitesList.push({
+          name,
+          url
+        })
+
+        await File
+          .write('./public/sites.json', JSON.stringify(sitesList))
+      }
     }
 
     res.render('index.ejs', { sitesList })
@@ -120,6 +129,29 @@ app.get('/books/prices', async (req, res) => {
 
   } catch (error) {
     console.error('Erro na rota GET /books/prices:', error)
+  }
+})
+
+app.post('/sites/delete', async(req, res) => {
+  try {
+    const url = req.body.url
+
+    if (url) {
+      const sitesList = await File
+        .read('./public/sites.json')
+
+      const sitesListJSON = JSON.parse(sitesList)
+
+      const updatedList = sitesListJSON
+        .filter(site => site.url != url)
+
+      await File
+        .write('./public/sites.json', JSON.stringify(updatedList))
+    }
+
+    res.redirect('/')
+  } catch (error) {
+    console.error('Erro na rota POST /sites/delete:', error)
   }
 })
 
