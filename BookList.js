@@ -81,7 +81,7 @@ class BookList {
       const response = await axios.get(site.url)
       const $ = cheerio.load(response.data)
 
-      $('table tbody tr').each((index, element) => {
+      $('table tbody tr').each((_index, element) => {
         const title = $($(element).find("td span")[0]).text()
         let price = $($(element).find("td")[3]).text()
         const shortTitle = title.slice(0, 30)

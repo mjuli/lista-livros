@@ -52,7 +52,7 @@ app.get('/', async(req, res) => {
   }
 })
 
-app.get('/books', async (req, res) => {
+app.get('/books', async (_req, res) => {
   try {
     const sites = await File
       .read('./public/sites.json')
