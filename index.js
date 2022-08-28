@@ -60,13 +60,27 @@ app.get('/books', async (req, res) => {
   }
 })
 
-app.get('/books/price', async (req, res) => {
+app.get('/books/prices', async (req, res) => {
   try {
     const sites = await File
       .read('./public/sites.json')
 
-    const lastListJSON = await BookList
-      .getBookList(JSON.parse(sites))
+    const lastList = await File.
+      read('./public/listaAtual.json')
+
+    let lastListJSON
+
+    if(lastList){
+      lastListJSON = JSON.parse(lastList)
+
+      const currentDate = new Date(Date.now()).toLocaleDateString()
+      const bookList = Object.keys(lastListJSON)
+
+      if (lastListJSON[bookList[0]].currentDate != currentDate){
+        lastListJSON = await BookList
+          .getBookList(JSON.parse(sites))
+      }
+    }
 
     await File
       .write('./public/listaAtual.json', JSON.stringify(lastListJSON))
@@ -82,12 +96,13 @@ app.get('/books/price', async (req, res) => {
       JSON.parse(oficialList) : oficialList
 
     let updatedList = BookList
-      .updateBookLists(oficialListJSON, lastListJSON)
+      .updateBookList(oficialListJSON, lastListJSON)
 
     await File
       .write('./public/listaOficial.json', JSON.stringify(updatedList))
 
     const orderBy = req.query.orderBy
+    const type = req.query.type
     const active = req.query.active
 
     let orderedList = []
@@ -95,17 +110,16 @@ app.get('/books/price', async (req, res) => {
     if(active === 'true')
       updatedList = BookList.removeDeletedBooks(updatedList, lastListJSON)
 
-    if (orderBy == 'title')
+    if (orderBy === 'title')
       orderedList = BookList.orderByTitle(updatedList)
 
-    if (orderBy == 'percentage')
-      orderedList = BookList.orderByPercentage(updatedList)
-
+    if (orderBy === 'percentage')
+      orderedList = BookList.orderByPercentage(updatedList, type)
 
     res.render('table.ejs', { updatedList, orderedList })
 
   } catch (error) {
-    console.error('Erro na rota GET /books/price:', error)
+    console.error('Erro na rota GET /books/prices:', error)
   }
 })
 
