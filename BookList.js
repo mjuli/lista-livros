@@ -35,7 +35,7 @@ class BookList {
     return updatedList
   }
 
-  static updateBookLists(oficialList, lastList) {
+  static updateBookList(oficialList, lastList) {
     const updatedList = { ...oficialList }
 
     for (let book in lastList) {
