@@ -10,16 +10,20 @@
 
 `npm start`
 
-Rotas: 
+Rotas:
 
 * GET:
 
-`/` 
+`/`
 
 `/books`
 
+`/books/prices`
+
 Exemplo de ordenação:
 
-`/books?orderBy=title`
- 
-`/books?orderBy=percentage`
+`/books/prices?orderBy=title`
+
+`/books/prices?orderBy=percentage`
+
+`/books/prices?orderBy=percentage&type=last`
