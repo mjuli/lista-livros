@@ -4,6 +4,26 @@ const cheerio = require('cheerio')
 
 class BookList {
 
+  static createBook(book) {
+    let newBook = {}
+
+    if (book && Object.keys(book).length) {
+      newBook = {
+        title: book.title,
+        price: book.price,
+        date: book.currentDate,
+        bestPrice: book.price,
+        bestDate: book.currentDate,
+        percentage: 0.00,
+        lastPrice: book.price,
+        lastDate: book.currentDate,
+        lastPercentage: 0.00
+      }
+    }
+
+    return newBook
+  }
+
   static removeDeletedBooks(oficialList, lastList) {
     const updatedList = { ...oficialList }
 
@@ -20,31 +40,33 @@ class BookList {
 
     for (let book in lastList) {
       if (updatedList[book]) {
-        updatedList[book] = {
-          ...updatedList[book],
-          lastPrice: lastList[book].price,
-          lastDate: lastList[book].currentDate
+        let diff = '-'
+
+        if (!isNaN(lastList[book].price)){
+          if (!isNaN(updatedList[book].price))
+            diff = (100 * (updatedList[book].price - lastList[book].price) / updatedList[book].price).toFixed(2)
+          else{
+            updatedList[book].price = lastList[book].price
+            updatedList[book].date = lastList[book].currentDate
+          }
         }
 
-        if ((Number(updatedList[book].bestPrice) > Number(lastList[book].price)) || updatedList[book].bestPrice == '-') {
+        updatedList[book] = {
+          ...updatedList[book],
+          lastPrice     : lastList[book].price,
+          lastDate      : lastList[book].currentDate,
+          lastPercentage: diff
+        }
+
+        if ((Number(updatedList[book].bestPrice) > Number(lastList[book].price)) || isNaN(updatedList[book].bestPrice)) {
           updatedList[book].bestPrice = lastList[book].price
           updatedList[book].lastDate = lastList[book].currentDate
-
-          const diff = 100 * (updatedList[book].price - lastList[book].price) / updatedList[book].price
-          updatedList[book].percentage = diff.toFixed(2)
+          updatedList[book].percentage = diff
         }
 
       } else {
-        updatedList[book] = {
-          title: lastList[book].title,
-          price: lastList[book].price,
-          date: lastList[book].currentDate,
-          bestPrice: lastList[book].price,
-          bestDate: lastList[book].currentDate,
-          percentage: 0.00,
-          lastPrice: lastList[book].price,
-          lastDate: lastList[book].currentDate
-        }
+        updatedList[book] = BookList
+          .createBook(lastList[book])
       }
     }
 
@@ -87,16 +109,8 @@ class BookList {
 
     if (lastList && Object.keys(lastList).length) {
       for (let book in lastList) {
-        oficialList[book] = {
-          title: lastList[book].title,
-          price: lastList[book].price,
-          date: lastList[book].currentDate,
-          bestPrice: lastList[book].price,
-          bestDate: lastList[book].currentDate,
-          percentage: 0.00,
-          lastPrice: lastList[book].price,
-          lastDate: lastList[book].currentDate
-        }
+        oficialList[book] = BookList
+          .createBook(lastList[book])
       }
     }
 
@@ -109,11 +123,15 @@ class BookList {
     return orderedTitles.sort()
   }
 
-  static orderByPercentage(bookList) {
+  static orderByPercentage(bookList, type) {
     let titlesList = Object.keys(bookList)
+    let percentage = 'percentage'
+
+    if(type === 'last')
+      percentage = 'lastPercentage'
 
     titlesList.sort((a, b) => {
-      return Number(bookList[a].percentage) - Number(bookList[b].percentage)
+      return Number(bookList[a][percentage]) - Number(bookList[b][percentage])
     })
 
     return titlesList.reverse()
