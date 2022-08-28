@@ -21,7 +21,7 @@
           </div>
 
           <div class="mb-3">
-            <input class="form-control" type="text" name="url" placeholder="Informe a url" required>
+            <input class="form-control" type="url" name="url" placeholder="Informe a url" required>
           </div>
 
           <div class="d-md-flex justify-content-md-end">
@@ -31,25 +31,60 @@
         </form>
 
         <% if(sitesList && sitesList.length) { %>
+          <div class="table-responsive mt-3">
+            <table class="table table-borderless table-striped align-middle" aria-describedby="sites">
+              <!-- table-borderless -->
+              <tbody>
+                <% sitesList.forEach( site=> { %>
+                  <tr>
+                    <td>
+                      <div class="ms-2 me-auto">
+                        <div class="fw-bold">
+                          <%= site.name %>
+                        </div>
+                        <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer">
+                          <%= site.url %>
+                        </a>
+                      </div>
+                    </td>
 
-          <ol class="list-group list-group-numbered mt-3">
-
-            <% for(let site of sitesList){ %>
-
-              <li class="list-group-item d-flex justify-content-between align-items-start">
-                <div class="ms-2 me-auto">
-                  <div class="fw-bold"><%= site.name %></div>
-                  <a href="<%= site.url %>" target="_blank" rel="noopener noreferrer"> <%= site.url %> </a>
-                </div>
-              </li>
-            <% } %>
-          </ol>
+                    <td>
+                      <form action="/sites/delete" method="POST" style="display: inline;" onsubmit="deleteSite(event, this)">
+                        <input type="hidden" name="url" value="<%= site.url %>">
+                        <div class="d-md-flex justify-content-md-end">
+                          <button class="btn btn-danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill"
+                              viewBox="0 0 16 16">
+                              <path
+                                d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                  <% }) %>
+              </tbody>
+            </table>
+          </div>
         <% } %>
       </div>
     </div>
   </div>
 
 </body>
+
+<script>
+  function deleteSite(event, form) {
+    event.preventDefault()
+
+    const decision = confirm('Você deseja deletar essa site?')
+
+    if (decision) {
+      form.submit()
+    }
+  }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"
   integrity="sha384-q2kxQ16AaE6UbzuKqyBE9/u/KzioAlnx2maXQHiDX9d4/zp8Ok3f+M7DPm+Ib6IU" crossorigin="anonymous"></script>
