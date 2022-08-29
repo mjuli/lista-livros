@@ -9,15 +9,15 @@ class BookList {
 
     if (book && Object.keys(book).length) {
       newBook = {
-        title: book.title,
-        price: book.price,
-        date: book.currentDate,
-        bestPrice: book.price,
-        bestDate: book.currentDate,
-        percentage: 0.00,
-        lastPrice: book.price,
-        lastDate: book.currentDate,
-        lastPercentage: 0.00
+        title           : book.title,
+        price           : book.price,
+        date            : book.currentDate,
+        bestPrice       : book.price,
+        bestDate        : book.currentDate,
+        percentage      : 0.00,
+        lastPrice       : book.price,
+        lastDate        : book.currentDate,
+        lastPercentage  : 0.00
       }
     }
 
@@ -131,7 +131,14 @@ class BookList {
       percentage = 'lastPercentage'
 
     titlesList.sort((a, b) => {
-      return Number(bookList[a][percentage]) - Number(bookList[b][percentage])
+      if (!isNaN(Number(bookList[a][percentage])) && !isNaN(Number(bookList[b][percentage])))
+        return Number(bookList[a][percentage]) - Number(bookList[b][percentage])
+      if (!isNaN(Number(bookList[a][percentage])))
+        return 1
+      if (!isNaN(Number(bookList[b][percentage])))
+        return -1
+      else
+        return 0
     })
 
     return titlesList.reverse()
