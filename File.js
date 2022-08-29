@@ -4,8 +4,7 @@ class File {
 
   static async read(path) {
     try {
-      const data = await fs.readFile(path, { encoding: 'utf8' })
-      return data
+      return await fs.readFile(path, { encoding: 'utf8' })
     } catch (err) {
       console.log(err)
     }
